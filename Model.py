@@ -263,6 +263,9 @@ def CreateModel(_data):
                 vPoint = [0,0,0]
                 vSize = [_data["vLength"][0],_data["vWide"][0], _data["vHeight"][0]]
                 dc.drawCube(vPoint, vSize, plots[-1],colors[j % len(colors)])
+                plots[-1].set_xlabel("x axis")
+                plots[-1].set_ylabel("y axis")
+                plots[-1].set_zlabel("z axis")
                 plt.title("Vehicle" + str(j))
     plt.show()
 
