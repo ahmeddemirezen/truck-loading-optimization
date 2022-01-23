@@ -165,8 +165,8 @@ class MainWindow(QMainWindow):
             for j in range(int(self.UsedVehicleTable.item(row, 6).text())):
                 data["j"].append(j)
                 data["vLength"].append(int(self.UsedVehicleTable.item(row, 2).text()))
-                data["vHeight"].append(int(self.UsedVehicleTable.item(row, 3).text()))
-                data["vWide"].append(int(self.UsedVehicleTable.item(row, 4).text()))
+                data["vHeight"].append(int(self.UsedVehicleTable.item(row, 4).text()))
+                data["vWide"].append(int(self.UsedVehicleTable.item(row, 3).text()))
                 data["vMass"].append(int(self.UsedVehicleTable.item(row, 5).text()))
 
 
