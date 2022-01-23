@@ -304,5 +304,3 @@ data2["vHeight"] = [300,250]
 data2["vWide"] = [250,250]
 data2["vMass"] = [40000,40000]
 #endregion
-
-CreateModel(data2)

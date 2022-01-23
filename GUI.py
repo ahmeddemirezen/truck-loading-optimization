@@ -2,6 +2,7 @@ import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+import Model
 
 
 class MainWindow(QMainWindow):
@@ -38,6 +39,7 @@ class MainWindow(QMainWindow):
         self.buttonRun.setGeometry(780, 770, 250, 100)
         self.buttonRun.setText('Run')
         self.buttonRun.setStyleSheet('background-color:green; font-size:30px')
+        self.buttonRun.clicked.connect(self.Run)
 
         # Product Table
         self.ProductTable = QTableWidget(self)
@@ -143,6 +145,42 @@ class MainWindow(QMainWindow):
         self.buttonDeleteVehicle.setStyleSheet('background-color:red')
         self.buttonDeleteVehicle.clicked.connect(self.DeleteAllVehiclesFromUsed)
 
+    def Run(self):
+        data = {}
+        data["i"] = []
+        data["k"] = []
+        data["j"] = []
+        data["l"] = []
+
+        data["pRadius"] = []
+        data["pHeight"] = []
+        data["pMass"] = []
+
+        data["vLength"] = []
+        data["vHeight"] = []
+        data["vWide"] = []
+        data["vMass"] = []
+
+        for row in range(self.UsedVehicleTable.rowCount()):
+            for j in range(int(self.UsedVehicleTable.item(row, 6).text())):
+                data["j"].append(j)
+                data["vLength"].append(int(self.UsedVehicleTable.item(row, 2).text()))
+                data["vHeight"].append(int(self.UsedVehicleTable.item(row, 3).text()))
+                data["vWide"].append(int(self.UsedVehicleTable.item(row, 4).text()))
+                data["vMass"].append(int(self.UsedVehicleTable.item(row, 5).text()))
+
+
+        for row in range(self.UsedProductTable.rowCount()):
+            for i in range(int(self.UsedProductTable.item(row,4).text())):
+                data["i"].append(i)
+                data["k"].append(i)
+                data["pRadius"].append(int(self.UsedProductTable.item(row, 1).text()))
+                data["pHeight"].append(int(self.UsedProductTable.item(row, 2).text()))
+                data["pMass"].append(int(self.UsedProductTable.item(row, 3).text()))
+
+            
+        Model.CreateModel(data)
+
     def AddProduct(self):
         ProductName = self.ProductWindow.ProductName.text()
         ProductRadius = self.ProductWindow.ProductRadius.text()
@@ -196,7 +234,7 @@ class MainWindow(QMainWindow):
             self.UsedProductTable.setItem(self.UsedProductTable.rowCount() - 1, 3, QTableWidgetItem(self.ProductTable.item(self.ProductTable.currentRow(), 3).text()))
             self.UsedProductTable.setItem(self.UsedProductTable.rowCount() - 1, 4, QTableWidgetItem(self.ProductTable.cellWidget(self.ProductTable.currentRow(), 4).text()))
             self.UsedProductTable.setCellWidget(self.UsedProductTable.rowCount() - 1, 5, self.DeleteButton)
-    
+
     # Delete button for Product Table
     def DeleteProduct(self):
         try:
@@ -458,10 +496,3 @@ class VehiclesWindow(QWidget):
         self.buttonAddVehicle.setStyleSheet('font-size:20px')
         self.buttonAddVehicle.setStyleSheet('font-weight:bold')
         self.buttonAddVehicle.setStyleSheet('background-color:green')
-
-
-if __name__ == '__main__':
-    app = QApplication([])
-    window = MainWindow()
-    window.show()
-    sys.exit(app.exec_())
