@@ -3,14 +3,13 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import drawCube as dc
-import random
 
 def CreateModel(_data):
     # Variables
     # p: 1 if the package is in the vehicle j, 0 otherwise
     p = LpVariable.dicts("p", (_data["i"], _data["j"]), 0, 1, LpBinary)
     # u: 1 if the vehicle j used, 0 otherwise
-    u = LpVariable.dicts("u", _data["j"], 0, 1, LpBinary)
+    # u = LpVariable.dicts("u", _data["j"], 0, 1, LpBinary)
 
     # x: the x position of the package i.
     x = LpVariable.dicts("x", _data["i"], 0, None, LpContinuous)
@@ -24,12 +23,13 @@ def CreateModel(_data):
     y_ = LpVariable.dicts("y_", _data["i"], 0, None, LpContinuous)
     z_ = LpVariable.dicts("z_", _data["i"], 0, None, LpContinuous)
 
+    # 
     absX = LpVariable.dicts("absX", (_data["i"], _data["k"]), 0, None, LpContinuous)
     absY = LpVariable.dicts("absY", (_data["i"], _data["k"]), 0, None, LpContinuous)
     absZ = LpVariable.dicts("absZ", (_data["i"], _data["k"]), 0, None, LpContinuous)
-    absZtoGround = LpVariable.dicts("absZtoGround", _data["i"], 0, None, LpContinuous)
-    absZtoZ_ = LpVariable.dicts("absZtoZ_", _data["i"], 0, None, LpContinuous)
-    z_Top = LpVariable.dicts("z_Top", _data["i"], 0, 1, LpBinary)
+    # absZtoGround = LpVariable.dicts("absZtoGround", _data["i"], 0, None, LpContinuous)
+    # absZtoZ_ = LpVariable.dicts("absZtoZ_", _data["i"], 0, None, LpContinuous)
+    # z_Top = LpVariable.dicts("z_Top", _data["i"], 0, 1, LpBinary)
 
     # 1 if the length of item i is parallel to X-axis, 0 otherwise. 
     lx = LpVariable.dicts("lx", _data["i"], 0, 1, LpBinary)
@@ -89,36 +89,36 @@ def CreateModel(_data):
     zn = LpVariable.dicts("zn", (_data["i"], _data["k"]), 0, 1, LpBinary)
 
     # 1 if there is any package bottom of the i.
-    q = LpVariable.dicts("q",_data["i"], 0, 1, LpBinary)
+    # q = LpVariable.dicts("q",_data["i"], 0, 1, LpBinary)
 
-    o = LpVariable.dicts("o", (data["i"], data["k"]), 0, 1, LpBinary)
-    beta = LpVariable.dicts("beta", (data["i"], data["k"],data["l"]), 0, 1, LpBinary)
-    ground = LpVariable.dicts("ground", data["i"], 0, 1, LpBinary)
-    absv = LpVariable.dicts("absv", (data["i"],data["k"]), 0, None, LpContinuous)
-    mik = LpVariable.dicts("mik", (data["i"],data["k"]), 0, 1, LpBinary)
-    suitH = LpVariable.dicts("suitH", (data["i"],data["k"]), 0, 1, LpBinary)
-    s = LpVariable.dicts("s", (data["i"],data["k"]), 0, 1, LpBinary)
-    n1 = LpVariable.dicts("n1", (data["i"],data["k"]), 0, 1, LpBinary)
-    n2 = LpVariable.dicts("n2", (data["i"],data["k"]), 0, 1, LpBinary)
-    n3 = LpVariable.dicts("n3", (data["i"],data["k"]), 0, 1, LpBinary)
-    n4 = LpVariable.dicts("n4", (data["i"],data["k"]), 0, 1, LpBinary)
+    # o = LpVariable.dicts("o", (data["i"], data["k"]), 0, 1, LpBinary)
+    # beta = LpVariable.dicts("beta", (data["i"], data["k"],data["l"]), 0, 1, LpBinary)
+    # ground = LpVariable.dicts("ground", data["i"], 0, 1, LpBinary)
+    # absv = LpVariable.dicts("absv", (data["i"],data["k"]), 0, None, LpContinuous)
+    # mik = LpVariable.dicts("mik", (data["i"],data["k"]), 0, 1, LpBinary)
+    # suitH = LpVariable.dicts("suitH", (data["i"],data["k"]), 0, 1, LpBinary)
+    # s = LpVariable.dicts("s", (data["i"],data["k"]), 0, 1, LpBinary)
+    # n1 = LpVariable.dicts("n1", (data["i"],data["k"]), 0, 1, LpBinary)
+    # n2 = LpVariable.dicts("n2", (data["i"],data["k"]), 0, 1, LpBinary)
+    # n3 = LpVariable.dicts("n3", (data["i"],data["k"]), 0, 1, LpBinary)
+    # n4 = LpVariable.dicts("n4", (data["i"],data["k"]), 0, 1, LpBinary)
 
     # Model Creation
-    prob = LpProblem("grasp", LpMinimize)
+    prob = LpProblem("grasp", LpMaximize)
 
     # Objective Function
-    prob += lpSum([((u[j] * _data["vHeight"][j] * _data["vLength"][j] * _data["vWide"][j]) - (p[i][j] * _data["pRadius"][i] * _data["pRadius"][i] * _data["pHeight"][i])) for j in _data["j"] for i in _data["i"]])
+    prob += lpSum(p[i][j] for i in _data["i"] for j in _data["j"])
 
     # Constraints
 
-    for i in _data["i"]:
-        for j in _data["j"]:
-            # put the package i in the bin j when vehicle u j is used.
-            prob += p[i][j] <= u[j]
+    # for i in _data["i"]:
+    #     for j in _data["j"]:
+    #         # put the package i in the bin j when vehicle u j is used.
+    #         prob += p[i][j] <= u[j]
     
     for i in _data["i"]:
         # every package i must be put in vehicle j.
-        prob += lpSum([p[i][j] for j in _data["j"]]) == 1
+        prob += lpSum([p[i][j] for j in _data["j"]]) <= 1
     
     for i in _data["i"]:
         prob += x_[i] - x[i] == lx[i] * _data["pRadius"][i] + ly[i] * _data["pRadius"][i]
@@ -128,22 +128,22 @@ def CreateModel(_data):
     for i in _data["i"]:
         for j in _data["j"]:
             # product i position constraints
-            prob += x_[i] <= _data["vLength"][j] * u[j] + (1 - p[i][j]) * 100000
-            prob += y_[i] <= _data["vWide"][j] * u[j] + (1 - p[i][j]) * 100000
-            prob += z_[i] <= _data["vHeight"][j] * u[j] + (1 - p[i][j]) * 100000
+            prob += x_[i] <= _data["vLength"][j] + ((1 - p[i][j]) * 1000000)
+            prob += y_[i] <= _data["vWide"][j] + ((1 - p[i][j]) * 1000000)
+            prob += z_[i] <= _data["vHeight"][j] + ((1 - p[i][j]) * 1000000)
     
     for i in _data["i"]:
         for k in range(i):
             # overlaping constraints
-            prob += x_[i] - x[k] <= ((1-xp[i][k]) * 100000)
-            prob += y_[i] - y[k] <= ((1-yp[i][k]) * 100000)
-            prob += z_[i] - z[k] <= ((1-zp[i][k]) * 100000)
+            prob += x_[i] - x[k] <= ((1-xp[i][k]) * 1000000)
+            prob += y_[i] - y[k] <= ((1-yp[i][k]) * 1000000)
+            prob += z_[i] - z[k] <= ((1-zp[i][k]) * 1000000)
     for i in _data["i"]:
         for k in range(i):
             # overlaping constraints
-            prob += x_[k] - x[i] <= ((1-xn[i][k]) * 100000)
-            prob += y_[k] - y[i] <= ((1-yn[i][k]) * 100000)
-            prob += z_[k] - z[i] <= ((1-zn[i][k]) * 100000)
+            prob += x_[k] - x[i] <= ((1-xn[i][k]) * 1000000)
+            prob += y_[k] - y[i] <= ((1-yn[i][k]) * 1000000)
+            prob += z_[k] - z[i] <= ((1-zn[i][k]) * 1000000)
     for i in _data["i"]:
         for k in range(i):
             prob += absX[i][k] >= x[i] - x[k]
@@ -154,39 +154,44 @@ def CreateModel(_data):
             prob += absY[i][k] >= y[k] - y_[i]
             prob += absZ[i][k] >= z[k] - z_[i]
 
-            prob += absX[i][k] - x_[i] <= (1-xp[i][k]) * 100000
-            prob += absY[i][k] - y_[i] <= (1-yp[i][k]) * 100000
-            prob += absZ[i][k] - z_[i] <= (1-zp[i][k]) * 100000
+            prob += absX[i][k] - x_[i] <= (1-xp[i][k]) * 1000000
+            prob += absY[i][k] - y_[i] <= (1-yp[i][k]) * 1000000
+            prob += absZ[i][k] - z_[i] <= (1-zp[i][k]) * 1000000
 
-            prob += absX[k][i] - x_[k] <= (1-xn[i][k]) * 100000
-            prob += absY[k][i] - y_[k] <= (1-yn[i][k]) * 100000
-            prob += absZ[k][i] - z_[k] <= (1-zn[i][k]) * 100000
+            prob += absX[k][i] - x_[k] <= (1-xn[i][k]) * 1000000
+            prob += absY[k][i] - y_[k] <= (1-yn[i][k]) * 1000000
+            prob += absZ[k][i] - z_[k] <= (1-zn[i][k]) * 1000000
+    # here *************************************************************
+
     for i in _data["i"]:
-        prob += z_[i] - z[i] >= 0 
+        prob += z_[i] - z[i] >= 0
         prob += z[i] - z_[i] <= 0
-    for i in _data["i"]:
-        for j in _data["j"]:
-            prob += p[i][j] * _data["vHeight"][j] - z_[i] >= 100
+
+    # for i in _data["i"]:
+    #     for j in _data["j"]:
+    #         prob += p[i][j] * _data["vHeight"][j] - z_[i] >= 100
     for i in _data["i"]:
         for k in range(i):
             for j in _data["j"]:
                 # relational position of package i and k only have one position.
                 prob += xp[i][k] + xn[i][k] + yp[i][k] + yn[i][k] + zp[i][k] + zn[i][k] >= p[i][j] + p[k][j] - 1
 
-    # for i in _data["i"]:
-    #     for k in range(i):
-    #         # 3 vertices of package k should be on a package i if k is on i.
-    #         prob += x[k] >= x[i]
-    #         prob += x[k] <= x_[i] + (1-zp[i][k]) * 100000
+    for i in _data["i"]:
+        for k in range(i):
+            # 3 vertices of package k should be on a package i if k is on i.
+            prob += x[k] >= x[i]
+            prob += x[k] <= x_[i] + (1-zp[i][k]) * 1000000
 
-    #         prob += y[k] >= y[i]
-    #         prob += y[k] <= y_[i] + (1-zp[i][k]) * 100000
+            prob += y[k] >= y[i]
+            prob += y[k] <= y_[i] + (1-zp[i][k]) * 1000000
 
-    #         prob += x_[k] >= x[i]
-    #         prob += x_[k] <= x_[i] + (1-zp[i][k]) * 100000
+            prob += x_[k] >= x[i]
+            prob += x_[k] <= x_[i] + (1-zp[i][k]) * 1000000
 
-    #         prob += y_[k] >= y[i] 
-    #         prob += y_[k] <= y_[i] + (1-zp[i][k]) * 100000
+            prob += y_[k] >= y[i] 
+            prob += y_[k] <= y_[i] + (1-zp[i][k]) * 1000000
+
+            prob += x_[k] <= x_[i] + (1-zp[i][k]) * 1000000
 
     
     # every package i should be placed on package k if i is on k.
@@ -194,7 +199,7 @@ def CreateModel(_data):
     
     # for i in _data["i"]:
     #     for k in range(i):
-    #         prob += z[k] <= zp[i][k] * 100000 
+    #         prob += z[k] <= zp[i][k] * 1000000 
 
         
     for i in _data["i"]:
@@ -206,9 +211,9 @@ def CreateModel(_data):
     
     for j in _data["j"]:
         # weight capacity constraints
-        prob += lpSum([_data["pMass"][i] * p[i][j] for i in _data["i"]]) <= _data["vMass"][j]
+        prob += lpSum([(_data["pMass"][i] * p[i][j] )for i in _data["i"]]) <= _data["vMass"][j]
 
-    # balance
+    #balance
     for j in _data["j"]:
         prob += gx[j] - (_data["vLength"][j]/2) <= absL[j] 
         prob += (_data["vLength"][j]/2) - gx[j] <= absL[j]
@@ -221,74 +226,73 @@ def CreateModel(_data):
         prob += absW[j] == eyp[j] - eyn[j]
         prob += absH[j] == ezp[j] - ezn[j]
 
-    # for i in _data["i"]:
-    #     for j in _data["j"]:
-    #         prob += d[i][j] >= gx[j] - (1 - p[i][j]) * 100000
-    #         prob += d[i][j] <= p[i][j] * 100000
-    #         prob += d[i][j] <= gx[j]
+    for i in _data["i"]:
+        for j in _data["j"]:
+            prob += d[i][j] >= gx[j] - ((1 - p[i][j]) * 1000000)
+            prob += d[i][j] <= p[i][j] * 1000000
+            prob += d[i][j] <= gx[j]
 
-    #         prob += e[i][j] >= x[i] - (1 - p[i][j]) * 100000
-    #         prob += e[i][j] <= p[i][j] * 100000
-    #         prob += e[i][j] <= x[i]
+            prob += e[i][j] >= x[i] - ((1 - p[i][j]) * 1000000)
+            prob += e[i][j] <= p[i][j] * 1000000
+            prob += e[i][j] <= x[i]
 
-    #         prob += bBalance[i][j] <= lx[i]
-    #         prob += bBalance[i][j] <= p[i][j]
-    #         prob += bBalance[i][j] >= lx[i] + p[i][j] - 1
+            prob += bBalance[i][j] <= lx[i]
+            prob += bBalance[i][j] <= p[i][j]
+            prob += bBalance[i][j] >= lx[i] + p[i][j] - 1
 
-    #         prob += cBalance[i][j] <= wx[i]
-    #         prob += cBalance[i][j] <= p[i][j]
-    #         prob += cBalance[i][j] >= wx[i] + p[i][j] - 1
+            prob += cBalance[i][j] <= wx[i]
+            prob += cBalance[i][j] <= p[i][j]
+            prob += cBalance[i][j] >= wx[i] + p[i][j] - 1
     for j in _data["j"]:
         prob += lpSum((_data["pMass"][i] * d[i][j]) for i in _data["i"]) - lpSum((_data["pMass"][i] * e[i][j]) for i in _data["i"]) - lpSum((_data["pMass"][i] * bBalance[i][j] * _data["pRadius"][i] / 2) for i in _data["i"]) - lpSum((_data["pMass"][i] * cBalance[i][j] * _data["pRadius"][i] / 2) for i in _data["i"]) == 0
 
-    # for i in _data["i"]:
-    #     for j in _data["j"]:
-    #         prob += tBalance[i][j] >= gy[j] - (1 - p[i][j]) * 100000
-    #         prob += tBalance[i][j] <= p[i][j] * 100000
-    #         prob += tBalance[i][j] <= gy[j]
+    for i in _data["i"]:
+        for j in _data["j"]:
+            prob += tBalance[i][j] >= gy[j] - ((1 - p[i][j]) * 1000000)
+            prob += tBalance[i][j] <= p[i][j] * 1000000
+            prob += tBalance[i][j] <= gy[j]
 
-    #         prob += vBalance[i][j] >= y[i] - (1 - p[i][j]) * 100000
-    #         prob += vBalance[i][j] <= p[i][j] * 100000
-    #         prob += vBalance[i][j] <= y[i]
+            prob += vBalance[i][j] >= y[i] - ((1 - p[i][j]) * 1000000)
+            prob += vBalance[i][j] <= p[i][j] * 1000000
+            prob += vBalance[i][j] <= y[i]
 
-    #         prob += rBalance[i][j] <= ly[i]
-    #         prob += rBalance[i][j] <= p[i][j]
-    #         prob += rBalance[i][j] >= ly[i] + p[i][j] - 1
+            prob += rBalance[i][j] <= ly[i]
+            prob += rBalance[i][j] <= p[i][j]
+            prob += rBalance[i][j] >= ly[i] + p[i][j] - 1
 
-    #         prob += sBalance[i][j] <= wy[i]
-    #         prob += sBalance[i][j] <= p[i][j]
-    #         prob += sBalance[i][j] >= wy[i] + p[i][j] - 1
+            prob += sBalance[i][j] <= wy[i]
+            prob += sBalance[i][j] <= p[i][j]
+            prob += sBalance[i][j] >= wy[i] + p[i][j] - 1
     for j in _data["j"]:
         prob += lpSum((_data["pMass"][i] * tBalance[i][j]) for i in _data["i"]) - lpSum((_data["pMass"][i] * vBalance[i][j]) for i in _data["i"]) - lpSum((_data["pMass"][i] * rBalance[i][j] * _data["pRadius"][i] * 0.5) for i in _data["i"]) - lpSum((_data["pMass"][i] * sBalance[i][j] * _data["pRadius"][i] * 0.5) for i in _data["i"]) == 0
 
     for i in _data["i"]:
         for j in _data["j"]:
-            prob += mBalance[i][j] >= gz[j] - (1 - p[i][j]) * 100000
-            prob += mBalance[i][j] <= p[i][j] * 100000
+            prob += mBalance[i][j] >= gz[j] - ((1 - p[i][j]) * 1000000)
+            prob += mBalance[i][j] <= p[i][j] * 1000000
             prob += mBalance[i][j] <= gz[j]
 
-            prob += nBalance[i][j] >= z[i] - (1 - p[i][j]) * 100000
-            prob += nBalance[i][j] <= p[i][j] * 100000
+            prob += nBalance[i][j] >= z[i] - ((1 - p[i][j]) * 1000000)
+            prob += nBalance[i][j] <= p[i][j] * 1000000
             prob += nBalance[i][j] <= z[i]
 
     for j in _data["j"]:
         prob += lpSum((_data["pMass"][i] * mBalance[i][j]) for i in _data["i"]) - lpSum((_data["pMass"][i] * nBalance[i][j]) for i in _data["i"]) - lpSum((_data["pMass"][i] * p[i][j] * _data["pHeight"][i] * 0.5) for i in _data["i"]) - lpSum((_data["pMass"][i] * sBalance[i][j] * _data["pHeight"][i] * 0.5) for i in _data["i"]) == 0
-    
+    # *************************************************************************************************************************
     prob.solve()
 
     print("Status:", LpStatus[prob.status])
-    for v in prob.variables():
-        if(v.name[0:1] == "x"):
-            print(v.name, "=", v.varValue)
+    print("cbc report:", prob.sol_status)
 
     colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
     figures = []
     plots = []
     for j in _data["j"]:
-        if(u[j].varValue == 1):
-            figures.append(plt.figure(j))
-            plots.append(figures[-1].add_subplot(111, projection='3d'))
-            for i in _data["i"]:
+        figures.append(plt.figure(j))
+        plots.append(figures[-1].add_subplot(111, projection='3d'))
+
+        for i in _data["i"]:
+            if(p[i][j].varValue == 1):
                 point = [int(x[i].varValue), int(y[i].varValue), int(z[i].varValue)]        
                 size = [_data["pRadius"][i], _data["pRadius"][i], _data["pHeight"][i]]  
                 dc.drawCube(point,size,plots[-1],colors[i % len(colors)])
@@ -301,6 +305,7 @@ def CreateModel(_data):
                 plots[-1].set_zlabel("z axis")
                 plt.title("Vehicle" + str(j))
     SaveModel(prob)
+    prob.writeLP("model.lp")
     plt.show()
 
 
@@ -327,37 +332,36 @@ data["vMass"] = [40000]
 #endregion
 #region Data2
 data2 = {}
-data2["i"] = [0,1,2,3,4,5,6]
-data2["k"] = [0,1,2,3,4,5,6]
-data2["j"] = [0,1]
+data2["i"] = [0,1,2,3,4,5,6,7,8,9]
+data2["k"] = [0,1,2,3,4,5,6,7,8,9]
+data2["j"] = [0]
 data2["l"] = [0,1,2,3]
 
-data2["pRadius"] = [100,100,100,100,100,100,100]
-data2["pHeight"] = [100,100,100,100,100,100,100]
-data2["pMass"] = [100,100,100,100,100,100,100]
+data2["pRadius"] = [100,100,100,100,100,100,100,50,50,50,50]
+data2["pHeight"] = [100,100,100,100,100,100,100,50,50,50,50]
+data2["pMass"] = [100,100,100,100,100,100,100,50,50,50,50]
 # x
-data2["vLength"] = [400,250]
+data2["vLength"] = [201,250]
 # z
-data2["vHeight"] = [300,250]
+data2["vHeight"] = [201,250]
 # y
-data2["vWide"] = [250,250]
+data2["vWide"] = [300,250]
 data2["vMass"] = [40000,40000]
 #endregion
 
 data3 = {}
-data3["i"] = [0,1,2,3,4]
-data3["k"] = [0,1,2,3,4]
+data3["i"] = [0,1,2,3,4,5,6,7,8,9,10,11,12]
+data3["k"] = [0,1,2,3,4,5,6,7,8,9,10,11,12]
 data3["j"] = [0]
 data3["l"] = [0,1,2,3]
 
-data3["pRadius"] = [20 ,20 ,20,30,50]
-data3["pHeight"] = [100,100,100,100,100]
-data3["pMass"] = [100,100,100,100,100]
+data3["pRadius"] = [20 ,20 ,20,30,50,20 ,20 ,20,30,50,20 ,20 ,20,30,50,20 ,20 ,20,30,50,20 ,20 ,20,30,50,20 ,20 ,20,30,50,20 ,20 ,20,30,50,20 ,20 ,20,30,50]
+data3["pHeight"] = [100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100]
+data3["pMass"] = [100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100]
 # x
-data3["vLength"] = [110]
+data3["vLength"] = [100]
 # z
-data3["vHeight"] = [110]
+data3["vHeight"] = [180]
 # y
-data3["vWide"] = [110]
+data3["vWide"] = [100]
 data3["vMass"] = [40000]
-CreateModel(data3)
