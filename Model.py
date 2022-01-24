@@ -173,28 +173,28 @@ def CreateModel(_data):
                 # relational position of package i and k only have one position.
                 prob += xp[i][k] + xn[i][k] + yp[i][k] + yn[i][k] + zp[i][k] + zn[i][k] >= p[i][j] + p[k][j] - 1
 
-    for i in _data["i"]:
-        for k in range(i):
-            # 3 vertices of package k should be on a package i if k is on i.
-            prob += x[k] >= x[i]
-            prob += x[k] <= x_[i] + (1-zp[i][k]) * 100000
+    # for i in _data["i"]:
+    #     for k in range(i):
+    #         # 3 vertices of package k should be on a package i if k is on i.
+    #         prob += x[k] >= x[i]
+    #         prob += x[k] <= x_[i] + (1-zp[i][k]) * 100000
 
-            prob += y[k] >= y[i]
-            prob += y[k] <= y_[i] + (1-zp[i][k]) * 100000
+    #         prob += y[k] >= y[i]
+    #         prob += y[k] <= y_[i] + (1-zp[i][k]) * 100000
 
-            prob += x_[k] >= x[i]
-            prob += x_[k] <= x_[i] + (1-zp[i][k]) * 100000
+    #         prob += x_[k] >= x[i]
+    #         prob += x_[k] <= x_[i] + (1-zp[i][k]) * 100000
 
-            prob += y_[k] >= y[i] 
-            prob += y_[k] <= y_[i] + (1-zp[i][k]) * 100000
+    #         prob += y_[k] >= y[i] 
+    #         prob += y_[k] <= y_[i] + (1-zp[i][k]) * 100000
 
     
     # every package i should be placed on package k if i is on k.
     
     
-    for i in _data["i"]:
-        for k in range(i):
-            prob += z[k] <= zp[i][k] * 100000 
+    # for i in _data["i"]:
+    #     for k in range(i):
+    #         prob += z[k] <= zp[i][k] * 100000 
 
         
     for i in _data["i"]:
@@ -207,6 +207,72 @@ def CreateModel(_data):
     for j in _data["j"]:
         # weight capacity constraints
         prob += lpSum([_data["pMass"][i] * p[i][j] for i in _data["i"]]) <= _data["vMass"][j]
+
+    # balance
+    for j in _data["j"]:
+        prob += gx[j] - (_data["vLength"][j]/2) <= absL[j] 
+        prob += (_data["vLength"][j]/2) - gx[j] <= absL[j]
+        prob += gy[j] - (_data["vWide"][j]/2) <= absW[j]
+        prob += (_data["vWide"][j]/2) - gy[j] <= absW[j]
+        prob += gz[j] <= absH[j]
+        prob += (gz[j] * (-1)) <= absH[j]
+
+        prob += absL[j] == exp[j] - exn[j]
+        prob += absW[j] == eyp[j] - eyn[j]
+        prob += absH[j] == ezp[j] - ezn[j]
+
+    # for i in _data["i"]:
+    #     for j in _data["j"]:
+    #         prob += d[i][j] >= gx[j] - (1 - p[i][j]) * 100000
+    #         prob += d[i][j] <= p[i][j] * 100000
+    #         prob += d[i][j] <= gx[j]
+
+    #         prob += e[i][j] >= x[i] - (1 - p[i][j]) * 100000
+    #         prob += e[i][j] <= p[i][j] * 100000
+    #         prob += e[i][j] <= x[i]
+
+    #         prob += bBalance[i][j] <= lx[i]
+    #         prob += bBalance[i][j] <= p[i][j]
+    #         prob += bBalance[i][j] >= lx[i] + p[i][j] - 1
+
+    #         prob += cBalance[i][j] <= wx[i]
+    #         prob += cBalance[i][j] <= p[i][j]
+    #         prob += cBalance[i][j] >= wx[i] + p[i][j] - 1
+    for j in _data["j"]:
+        prob += lpSum((_data["pMass"][i] * d[i][j]) for i in _data["i"]) - lpSum((_data["pMass"][i] * e[i][j]) for i in _data["i"]) - lpSum((_data["pMass"][i] * bBalance[i][j] * _data["pRadius"][i] / 2) for i in _data["i"]) - lpSum((_data["pMass"][i] * cBalance[i][j] * _data["pRadius"][i] / 2) for i in _data["i"]) == 0
+
+    # for i in _data["i"]:
+    #     for j in _data["j"]:
+    #         prob += tBalance[i][j] >= gy[j] - (1 - p[i][j]) * 100000
+    #         prob += tBalance[i][j] <= p[i][j] * 100000
+    #         prob += tBalance[i][j] <= gy[j]
+
+    #         prob += vBalance[i][j] >= y[i] - (1 - p[i][j]) * 100000
+    #         prob += vBalance[i][j] <= p[i][j] * 100000
+    #         prob += vBalance[i][j] <= y[i]
+
+    #         prob += rBalance[i][j] <= ly[i]
+    #         prob += rBalance[i][j] <= p[i][j]
+    #         prob += rBalance[i][j] >= ly[i] + p[i][j] - 1
+
+    #         prob += sBalance[i][j] <= wy[i]
+    #         prob += sBalance[i][j] <= p[i][j]
+    #         prob += sBalance[i][j] >= wy[i] + p[i][j] - 1
+    for j in _data["j"]:
+        prob += lpSum((_data["pMass"][i] * tBalance[i][j]) for i in _data["i"]) - lpSum((_data["pMass"][i] * vBalance[i][j]) for i in _data["i"]) - lpSum((_data["pMass"][i] * rBalance[i][j] * _data["pRadius"][i] * 0.5) for i in _data["i"]) - lpSum((_data["pMass"][i] * sBalance[i][j] * _data["pRadius"][i] * 0.5) for i in _data["i"]) == 0
+
+    for i in _data["i"]:
+        for j in _data["j"]:
+            prob += mBalance[i][j] >= gz[j] - (1 - p[i][j]) * 100000
+            prob += mBalance[i][j] <= p[i][j] * 100000
+            prob += mBalance[i][j] <= gz[j]
+
+            prob += nBalance[i][j] >= z[i] - (1 - p[i][j]) * 100000
+            prob += nBalance[i][j] <= p[i][j] * 100000
+            prob += nBalance[i][j] <= z[i]
+
+    for j in _data["j"]:
+        prob += lpSum((_data["pMass"][i] * mBalance[i][j]) for i in _data["i"]) - lpSum((_data["pMass"][i] * nBalance[i][j]) for i in _data["i"]) - lpSum((_data["pMass"][i] * p[i][j] * _data["pHeight"][i] * 0.5) for i in _data["i"]) - lpSum((_data["pMass"][i] * sBalance[i][j] * _data["pHeight"][i] * 0.5) for i in _data["i"]) == 0
     
     prob.solve()
 
@@ -234,6 +300,7 @@ def CreateModel(_data):
                 plots[-1].set_ylabel("y axis")
                 plots[-1].set_zlabel("z axis")
                 plt.title("Vehicle" + str(j))
+    SaveModel(prob)
     plt.show()
 
 
@@ -253,9 +320,9 @@ data["pRadius"] = [100,100,100,70,70,100,70,70,100,70,70,100,70,70,100,70,70,100
 data["pHeight"] = [80,80,80,60,60,80,60,60,80,60,60,80,60,60,80,60,60,80,60,60]
 data["pMass"] = [100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100]
 
-data["vLength"] = [1500]
-data["vHeight"] = [230]
-data["vWide"] = [1000]
+data["vLength"] = [500]
+data["vHeight"] = [200]
+data["vWide"] = [400]
 data["vMass"] = [40000]
 #endregion
 #region Data2
@@ -276,3 +343,21 @@ data2["vHeight"] = [300,250]
 data2["vWide"] = [250,250]
 data2["vMass"] = [40000,40000]
 #endregion
+
+data3 = {}
+data3["i"] = [0,1,2,3,4]
+data3["k"] = [0,1,2,3,4]
+data3["j"] = [0]
+data3["l"] = [0,1,2,3]
+
+data3["pRadius"] = [20 ,20 ,20,30,50]
+data3["pHeight"] = [100,100,100,100,100]
+data3["pMass"] = [100,100,100,100,100]
+# x
+data3["vLength"] = [110]
+# z
+data3["vHeight"] = [110]
+# y
+data3["vWide"] = [110]
+data3["vMass"] = [40000]
+CreateModel(data3)
