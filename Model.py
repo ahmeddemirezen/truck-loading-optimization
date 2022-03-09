@@ -365,3 +365,5 @@ data3["vHeight"] = [180]
 # y
 data3["vWide"] = [100]
 data3["vMass"] = [40000]
+
+CreateModel(data2)
